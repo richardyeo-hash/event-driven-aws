@@ -1,0 +1,9 @@
+echo -ne '\n' | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" -y
+npm uninstall -g aws-sam-local
+sudo pip uninstall aws-sam-cli -y
+rm -rf $(which sam)
+brew tap aws/tap
+brew install aws-sam-cli
+sam --version
+ln -sf $(which sam) ~/.c9/bin/sam 
+ls -la ~/.c9/bin/sam
