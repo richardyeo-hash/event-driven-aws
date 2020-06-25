@@ -62,8 +62,94 @@ Read the following lists of preparations that you need to do.
 1. From this step onwards, type/copy commands into window highlighted below
     ![Alt text](assets/cloud9-console.png)
 
-## Resources
+2. Enter the following command
 
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
+    ```cli
 
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
+    git clone https://github.com/richardyeo-hash/event-driven-aws.git
+    ```
+
+    Press enter.
+    You should see messaages such as unpacking objects.
+
+    ![Alt text](assets/clone.png)
+
+3. Run following command
+
+    ```commandline
+    echo -ne '\n' | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" -y
+    test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+    test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+    test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+    echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+    npm uninstall -g aws-sam-local
+    sudo pip uninstall aws-sam-cli -y
+    rm -rf $(which sam)
+    brew tap aws/tap
+    brew install aws-sam-cli
+    sam --version
+    ln -sf $(which sam) ~/.c9/bin/sam 
+    ls -la ~/.c9/bin/sam
+    ```
+
+    Press enter.
+
+    Verify that you get output like below.
+
+    ![Alt text](assets/after-install.png)
+
+4. Run following command
+
+    ```command
+    cd event-drivent-aws
+    sam build
+    ```
+
+    Verify that you get output like below.
+
+    ![Alt text](assets/sambuild.png)
+
+5. Run the following command 
+
+    ```command
+    sam deploy --guided
+    ```
+    
+    Press enter.
+
+    Fill in values as shown in the example below
+    ![Alt text](assets/samdeploy.png)
+
+    When asked if you would like to **Deploy this changeset?**, press y and then enter.
+
+## Clean up
+
+By default, there are events published every minute, which may incur additional charges.
+Once you are done with this lab, use this chapter to clean up.
+
+1. Go to [CloudFormation console](https://ap-southeast-1.console.aws.amazon.com/cloudformation/home?region=ap-southeast-1)
+
+2. Select CloudFormation template with TO-DELETE in the name.
+
+3. Click delete.
+
+    ![Alt text](assets/cleanup-1.png)
+
+4. Go to Cloud9 console and search for S3 name. Take note of the name.
+
+    ![Alt text](assets/cleanup-2.png)
+
+5. Go to [S3 console](https://s3.console.aws.amazon.com/s3/home?region=ap-southeast-1)
+
+    **WARNING! IF YOU HAVE PRODUCTION WORKLOAD BASED ON SAM, SKIP THIS STEP! THIS MAY CAUSE PRODUCTION IMPACT**
+
+    Search for the S3 bucket and delete it.
+
+    ![Alt text](assets/cleanup-3.png)
+
+6. Go to [Cloud9 console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1)
+
+7. Look for your Cloud9 instance and delete it
+
+    ![Alt text](assets/cleanup-4.png)
+
