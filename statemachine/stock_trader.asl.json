@@ -36,7 +36,7 @@
                 "BackoffRate": 1
             }],
             "ResultPath": "$",
-            "Next": "Send to SQS"
+            "Next": "Push to EventBridge"
         },
         "Buy Stock": {
             "Type": "Task",
@@ -50,17 +50,19 @@
                 "BackoffRate": 1
             }],
             "ResultPath": "$",
-            "Next": "Send to SQS"
+            "Next": "Push to EventBridge"
         },
-        "Send to SQS": {
+        "Push to EventBridge": {
             "Type": "Task",
-            "Resource": "${sendMessage}",
-            "Parameters": {
-                "QueueUrl": "${MyQueueUrl}",
-                "MessageBody.$": "$",
-                "MessageAttributes": {
-                }
-            },
+            "Resource": "${EventPusherFunctionArn}",
+            "Retry": [{
+                "ErrorEquals": [
+                    "States.TaskFailed"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 3,
+                "BackoffRate": 1
+            }],
             "End": true
         }
     }

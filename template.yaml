@@ -16,6 +16,7 @@ Resources:
         StockCheckerFunctionArn: !GetAtt StockCheckerFunction.Arn
         StockSellerFunctionArn: !GetAtt StockSellerFunction.Arn
         StockBuyerFunctionArn: !GetAtt StockBuyerFunction.Arn
+        EventPusherFunctionArn: !GetAtt EventPusherFunction.Arn
         sendMessage: !Sub arn:${AWS::Partition}:states:::sqs:sendMessage
         MyQueueUrl: !Ref MyQueue
       Events:
@@ -23,7 +24,7 @@ Resources:
           Type: Schedule # More info about Schedule Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-statemachine-schedule.html
           Properties:
             Description: Schedule to run the stock trading state machine every hour
-            Enabled: False # This schedule is disabled by default to avoid incurring charges.
+            Enabled: True # This schedule is disabled by default to avoid incurring charges.
             Schedule: "rate(1 minute)"
       Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - LambdaInvokePolicy:
@@ -32,6 +33,8 @@ Resources:
             FunctionName: !Ref StockSellerFunction
         - LambdaInvokePolicy:
             FunctionName: !Ref StockBuyerFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref EventPusherFunction
         - SQSSendMessagePolicy:
             QueueName: !GetAtt MyQueue.QueueName
 

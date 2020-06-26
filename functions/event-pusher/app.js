@@ -1,5 +1,3 @@
-var AWS = require('aws-sdk')
-var eventbridge = new AWS.EventBridge();
 /**
  * Sample Lambda function which mocks the operation of buying a random number of shares for a stock.
  * For demonstration purposes, this Lambda function does not actually perform any  actual transactions. It simply returns a mocked result.
@@ -14,19 +12,23 @@ exports.lambdaHandler = async(event, context) => {
     // Get the price of the stock provided as input
     var AWS = require('aws-sdk')
     var eventbridge = new AWS.EventBridge();
+
     var params = {
-        Limit: 5,
-        NamePrefix: 'STRING_VALUE',
-        NextToken: 'STRING_VALUE'
+        Entries: [ /* required */ {
+                Detail: JSON.stringify(event),
+                DetailType: 'firstEventSchema',
+                EventBusName: 'default',
+                Resources: [
+                    'Lambda'
+                ],
+                Source: 'StockTrade'
+            },
+            /* more items */
+        ]
     };
-    var output = await eventbridge.listEventBuses(params, function(err, data) {
-        if (err)(console.log(err)); // an error occurred
-        else {
-            // successful response
-            console.log(data);
-            return data;
-        }
+    var output = await eventbridge.putEvents(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else console.log(data); // successful response
     }).promise();
-    console.log(output);
     context.succeed(output);
 };

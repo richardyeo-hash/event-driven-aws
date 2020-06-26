@@ -1,155 +1,98 @@
-# Event Driven Architecture on AWS
+# eventProducer
 
+This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders:
 
-## Before starting
+- functions - Code for the application's Lambda functions to check the value of, buy, or sell shares of a stock.
+- statemachines - Definition for the state machine that orchestrates the stock trading workflow.
+- template.yaml - A template that defines the application's AWS resources.
 
-Read the following lists of preparations that you need to do.
+This application creates a mock stock trading workflow which runs on a pre-defined schedule (note that the schedule is disabled by default to avoid incurring charges). It demonstrates the power of Step Functions to orchestrate Lambda functions and other AWS resources to form complex and robust workflows, coupled with event-driven development using Amazon EventBridge.
 
-1. Have an AWS Account with Admin access ready for console access.
-2. **Nothing** in this lab will be done outside of your browser.
+AWS Step Functions lets you coordinate multiple AWS services into serverless workflows so you can build and update apps quickly. Using Step Functions, you can design and run workflows that stitch together services, such as AWS Lambda, AWS Fargate, and Amazon SageMaker, into feature-rich applications.
 
-## Chapter 1: Creating cloud based development environment using AWS Cloud9
+The application uses several AWS resources, including Step Functions state machines, Lambda functions and an EventBridge rule trigger. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
-1. Sign in to the AWS Cloud9 console as follows:
-    
-    If you're the only individual using your AWS account, go to https://console.aws.amazon.com/cloud9/.
+If you prefer to use an integrated development environment (IDE) to build and test the Lambda functions within your application, you can use the AWS Toolkit. The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started:
 
-2. After you sign in to the AWS Cloud9 console, in the top navigation bar, choose an AWS Region to create the environment in.
+* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
+* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
+* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
+* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
 
-    Make sure to use **Singapore (ap-southeast-1)**
+The AWS Toolkit for VS Code includes full support for state machine visualization, enabling you to visualize your state machine in real time as you build. The AWS Toolkit for VS Code includes a language server for Amazon States Language, which lints your state machine definition to highlight common errors, provides auto-complete support, and code snippets for each state, enabling you to build state machines faster.
 
-    ![Alt text](assets/console-region.png)
-3. Choose the large Create environment button in one of the locations shown below.
+## Deploy the sample application
 
-    If you have no AWS Cloud9 environments yet, the button is shown on a welcome page.
+The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda.
 
-    ![Alt text](assets/console-welcome-new-env.png)
+To use the SAM CLI, you need the following tools:
 
-    If you already have AWS Cloud9 environments, the button is shown as follows.
+* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+* Node.js - [Install Node.js 12](https://nodejs.org/en/), including the NPM package management tool.
+* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
-    ![Alt text](assets/console-new-env.png)
+To build and deploy your application for the first time, run the following in your shell:
 
-4. On the Name environment page, for Name, enter a name for your environment. For this tutorial, use my-demo-environment.
+```bash
+sam build
+sam deploy --guided
+```
 
-5. For Description, enter something about your environment. For this tutorial, use This environment is for the AWS Cloud9 tutorial.
+The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts:
 
-6. Choose Next step.
+* **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
+* **AWS Region**: The AWS region you want to deploy your app to.
+* **Confirm changes before deploy**: If set to yes, any change sets will be shown to you before execution for manual review. If set to no, the AWS SAM CLI will automatically deploy application changes.
+* **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modified IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
+* **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
-7. On the Configure settings page, for Environment type, choose Create a new instance for environment (EC2).
+You can find your State Machine ARN in the output values displayed after deployment.
 
-8. For Instance type, leave the default choice. This choice has relatively low RAM and vCPUs, which is sufficient for this tutorial.
+## Use the SAM CLI to build and test locally
 
-9. For Platform, choose Amazon Linux. AWS Cloud9 creates the instance and then connects the environment to it.
+Build the Lambda functions in your application with the `sam build --use-container` command.
 
-10. Leave default value for Cost-saving setting. When all web browser instances that are connected to the IDE for the environment are closed, AWS Cloud9 waits this amount of time and then shuts down the Amazon EC2 instance for the environment.
+```bash
+eventProducer$ sam build
+```
 
-11. Expand Network settings (advanced).
+The SAM CLI installs dependencies defined in `functions/*/package.json`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
-    AWS Cloud9 uses Amazon Virtual Private Cloud (Amazon VPC) to communicate with the newly created Amazon EC2 instance. For this tutorial, we recommend that you don't change the preselected default settings. With the default settings, AWS Cloud9 attempts to automatically use the default VPC with its single subnet in the same AWS account and AWS Region as the new environment.
+## Add a resource to your application
+The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
 
-    If you are familiar with the VPC situation in your account, choose a VPC and a public subnet.
+## Fetch, tail, and filter Lambda function logs
 
-    If you see a red exclamation mark, you need to choose proper VPC. If you are not sure, please create a proper VPC by following this [guide](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-getting-started.html). **Do only "step 1:Create the VPC" and use that VPC to complete step 11**
+To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs` lets you fetch logs generated by your deployed Lambda function from the command line. In addition to printing the logs on the terminal, this command has several nifty features to help you quickly find the bug.
 
-12. Choose Next step.
+`NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
-13. On the Review page, choose Create environment. Wait while AWS Cloud9 creates your environment. This can take several minutes.
+```bash
+eventProducer$ sam logs -n StockCheckerFunction --stack-name eventProducer --tail
+```
 
-14. After AWS Cloud9 creates your environment, it displays the AWS Cloud9 IDE for the environment.
+You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
 
-## Chapter 2: Using templates do deploy sample application
+## Unit tests
 
-1. From this step onwards, type/copy commands into window highlighted below
-    ![Alt text](assets/cloud9-console.png)
+Tests are defined in the `functions/*/tests` folder in this project. Use NPM to install the [Mocha test framework](https://mochajs.org/) and run unit tests.
 
-2. Enter the following command
+```bash
+eventProducer$ cd functions/stock-checker
+stock-checker$ npm install
+stock-checker$ npm run test
+```
 
-    ```cli
+## Cleanup
 
-    git clone https://github.com/richardyeo-hash/event-driven-aws.git
-    ```
+To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
-    Press enter.
-    You should see messaages such as unpacking objects.
+```bash
+aws cloudformation delete-stack --stack-name eventProducer
+```
 
-    ![Alt text](assets/clone.png)
+## Resources
 
-3. Run following command
+See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
 
-    ```commandline
-    echo -ne '\n' | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" -y
-    test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-    test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-    test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-    echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
-    npm uninstall -g aws-sam-local
-    sudo pip uninstall aws-sam-cli -y
-    rm -rf $(which sam)
-    brew tap aws/tap
-    brew install aws-sam-cli
-    sam --version
-    ln -sf $(which sam) ~/.c9/bin/sam 
-    ls -la ~/.c9/bin/sam
-    ```
-
-    Press enter.
-
-    Verify that you get output like below.
-
-    ![Alt text](assets/after-install.png)
-
-4. Run following command
-
-    ```command
-    cd event-drivent-aws
-    sam build
-    ```
-
-    Verify that you get output like below.
-
-    ![Alt text](assets/sambuild.png)
-
-5. Run the following command 
-
-    ```command
-    sam deploy --guided
-    ```
-    
-    Press enter.
-
-    Fill in values as shown in the example below
-    ![Alt text](assets/samdeploy.png)
-
-    When asked if you would like to **Deploy this changeset?**, press y and then enter.
-
-## Clean up
-
-By default, there are events published every minute, which may incur additional charges.
-Once you are done with this lab, use this chapter to clean up.
-
-1. Go to [CloudFormation console](https://ap-southeast-1.console.aws.amazon.com/cloudformation/home?region=ap-southeast-1)
-
-2. Select CloudFormation template with TO-DELETE in the name.
-
-3. Click delete.
-
-    ![Alt text](assets/cleanup-1.png)
-
-4. Go to Cloud9 console and search for S3 name. Take note of the name.
-
-    ![Alt text](assets/cleanup-2.png)
-
-5. Go to [S3 console](https://s3.console.aws.amazon.com/s3/home?region=ap-southeast-1)
-
-    **WARNING! IF YOU HAVE PRODUCTION WORKLOAD BASED ON SAM, SKIP THIS STEP! THIS MAY CAUSE PRODUCTION IMPACT**
-
-    Search for the S3 bucket and delete it.
-
-    ![Alt text](assets/cleanup-3.png)
-
-6. Go to [Cloud9 console](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1)
-
-7. Look for your Cloud9 instance and delete it
-
-    ![Alt text](assets/cleanup-4.png)
-
+Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
