@@ -65,6 +65,7 @@ Resources:
       CodeUri: functions/event-pusher/
       Handler: app.lambdaHandler
       Runtime: nodejs12.x
+      Timeout: 90
       Policies:
         - EventBridgePutEventsPolicy:
             EventBusName: default
